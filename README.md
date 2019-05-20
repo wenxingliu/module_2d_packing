@@ -10,7 +10,7 @@ shapely==1.6.4.post2
 ## How To Use
 
 #### Run function
-Please use main.ipynb to run the main function. Inputs are:
+Please use *main.ipynb* to run the main function. Inputs are:
 1. Box size, a tuple of (height, width).
 2. The corners of a given module. Remeber to position the left-bottom corner to origin, and place the entire module in first quadrant.
 
