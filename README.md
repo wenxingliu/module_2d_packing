@@ -25,3 +25,9 @@ Running the script with larger hyper parameters will always give you better resu
 
 #### Outputs
 For a given set of box and module, the script will find layouts that can hold a max number of modules, where this max is determined from repeated simulation. The script will export a plot showing the layout, as well as a csv file with coordinates of all corners. Outputs are stored in *outputs* folder. 
+
+
+![Alt text](outputs/L_type_eg.png?raw=true "L-type Module")
+
+
+![Alt text](outputs/M_type_eg.png?raw=true "M-type Module")
