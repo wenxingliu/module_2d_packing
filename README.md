@@ -1,7 +1,9 @@
 ## Requirements
 
 sympy==1.4
+
 matplotlib==2.2.3
+
 shapely==1.6.4.post2
 
 
