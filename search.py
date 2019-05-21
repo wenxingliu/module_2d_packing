@@ -2,23 +2,13 @@ import numpy as np
 from random import choice
 
 import sympy as sym
-from sympy import geometry as geom
 
-from polygon_computation import check_if_polygons_overlap_with_each_other, check_if_module_is_in_box, find_open_area, \
-    check_if_point_in_feasible_area
+from polygon_computation import check_if_module_is_in_box, check_if_point_in_feasible_area
 from shapely_sympy_converter import shapely_polygon_to_sym
-from plot_polygon import plot_polygons
 from move_module import move_rotate_module_polygon
+from utils import _compute_width_and_height
 
 __author__ = 'wliu'
-
-
-def _compute_width_and_height(shape):
-    x_list = [point.args[0] for point in shape.vertices]
-    y_list = [point.args[1] for point in shape.vertices]
-    width = np.max(x_list) - np.min(x_list)
-    height = np.max(y_list) - np.min(y_list)
-    return width, height
 
 
 def _compute_search_grid_params(box):
@@ -85,7 +75,7 @@ def random_search_for_next_module_position(open_area, module):
     fail_ct = 0
     fail_ct_limit = np.sqrt(open_area.area)
 
-    while (new_module is None) and (fail_ct < fail_ct_limit):
+    while (new_module is None) and (fail_ct <= fail_ct_limit):
 
         start_point = choice(grid_search_start_point)
         x = choice(grid_search_offset_x)

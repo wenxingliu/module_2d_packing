@@ -1,18 +1,20 @@
 from collections import defaultdict
 from utils import build_box, build_module
 from search import search_in_all_open_area
-from polygon_computation import find_open_area
+from polygon_computation import find_open_area, compute_min_number_of_modules
 from plot_polygon import plot_polygons
 
 __author__ = 'wliu'
 
 
 def generate_2d_packing_layout(box, module, random_search=False, save_plot=False):
-    module_list = [module, ]
+    max_num = int(box.area / module.area)
+    min_num = compute_min_number_of_modules(box=box, module=module)
 
+    module_list = [module, ]
     list_of_open_area = find_open_area(box=box, existing_modules=module_list)
 
-    for _ in range(100):
+    for iter_num in range(max_num):
 
         new_module = search_in_all_open_area(open_area_list=list_of_open_area, module=module,
                                              random_search=random_search)
@@ -24,6 +26,9 @@ def generate_2d_packing_layout(box, module, random_search=False, save_plot=False
         no_feasible_open_area_left = len(list_of_open_area) == 0
 
         if no_feasible_open_area_left:
+            break
+
+        if (max_num - iter_num) + len(module_list) < min_num:
             break
 
     if save_plot:

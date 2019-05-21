@@ -1,6 +1,7 @@
 import json
+
+import numpy as np
 import sympy as sym
-from sympy import geometry as geom
 
 __author__ = 'wliu'
 
@@ -45,3 +46,14 @@ def log_modules_to_json(poly_list, file_name):
     coords_data = modules_to_coords(poly_list)
     with open(f'{file_name}.json', 'w') as fp:
         json.dump(coords_data, fp)
+
+
+def _compute_width_and_height(shape):
+    x_list = [point.args[0] for point in shape.vertices]
+    y_list = [point.args[1] for point in shape.vertices]
+    width = np.max(x_list) - np.min(x_list)
+    height = np.max(y_list) - np.min(y_list)
+
+    width, height = max([width, height]), min([width, height])
+
+    return width, height

@@ -1,4 +1,5 @@
 from shapely_sympy_converter import *
+from utils import _compute_width_and_height
 
 __author__ = 'wliu'
 
@@ -67,6 +68,15 @@ def check_if_point_in_feasible_area(point, open_area):
     point_tr = sympy_point_to_shapely(point)
     open_area_sym = shapely_polygon_to_sym(open_area)
     return open_area.contains(point_tr) or open_area_sym.contains(point)
+
+
+def compute_min_number_of_modules(module, box):
+    m_l1, m_l2 = _compute_width_and_height(module)
+    b_l1, b_l2 = _compute_width_and_height(box)
+
+    min_num = max([int(b_l1/m_l1) * int(b_l2/m_l2), int(b_l1/m_l2) * int(b_l2/m_l1)])
+
+    return min_num
 
 
 def _check_if_module_can_fit_in_area(module_area_val, open_area):
