@@ -12,7 +12,7 @@ def generate_2d_packing_layout(box, module, random_search=False, save_plot=False
 
     list_of_open_area = find_open_area(box=box, existing_modules=module_list)
 
-    for iter_num in range(1000):
+    for _ in range(100):
 
         new_module = search_in_all_open_area(open_area_list=list_of_open_area, module=module,
                                              random_search=random_search)
@@ -23,7 +23,7 @@ def generate_2d_packing_layout(box, module, random_search=False, save_plot=False
 
         no_feasible_open_area_left = len(list_of_open_area) == 0
 
-        if no_feasible_open_area_left or (new_module is None):
+        if no_feasible_open_area_left:
             break
 
     if save_plot:
@@ -46,7 +46,6 @@ def simulation(box_dim, module_coordinates, N=50, plot_name='', random_search=Fa
         print(f'Simulation {iter_num}...')
         modules = generate_2d_packing_layout(box=box,
                                              module=module,
-
                                              random_search=random_search,
                                              save_plot=False)
         num_modules = len(modules)

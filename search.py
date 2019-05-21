@@ -83,8 +83,9 @@ def random_search_for_next_module_position(open_area, module):
 
     new_module = None
     fail_ct = 0
+    fail_ct_limit = np.sqrt(open_area.area)
 
-    while (new_module is None) or (fail_ct < 500):
+    while (new_module is None) and (fail_ct < fail_ct_limit):
 
         start_point = choice(grid_search_start_point)
         x = choice(grid_search_offset_x)
