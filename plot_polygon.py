@@ -1,10 +1,11 @@
 import datetime as dt
 from itertools import cycle
+
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-import numpy as np
-
-from utils import modules_to_coords, log_modules_to_json
+from utils import log_modules_to_json
 
 __author__ = 'wliu'
 

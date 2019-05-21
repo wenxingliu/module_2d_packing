@@ -4,7 +4,9 @@ from random import choice
 import sympy as sym
 from sympy import geometry as geom
 
-from polygon_computation import check_if_polygons_overlap_with_each_other, check_if_module_is_in_box, find_open_area
+from polygon_computation import check_if_polygons_overlap_with_each_other, check_if_module_is_in_box, find_open_area, \
+    check_if_point_in_feasible_area
+from shapely_sympy_converter import shapely_polygon_to_sym
 from plot_polygon import plot_polygons
 from move_module import move_rotate_module_polygon
 
@@ -19,87 +21,101 @@ def _compute_width_and_height(shape):
     return width, height
 
 
-def _compute_search_grid_params(box, module, existing_modules):
-    
-    box_width, box_height = _compute_width_and_height(box)
-    
-    grid_search_angle = np.array([-sym.pi/2, 0, sym.pi/2, sym.pi])
-    
+def _compute_search_grid_params(box):
+    box_br = shapely_polygon_to_sym(box)
+
+    box_width, box_height = _compute_width_and_height(box_br)
+
+    grid_search_angle = np.array([-sym.pi / 2, 0, sym.pi / 2, sym.pi])
+
     offset_step = 1
     grid_search_offset_x = np.arange(0, box_width + offset_step, offset_step)
     grid_search_offset_y = np.arange(0, box_height + offset_step, offset_step)
-    
-    start_points = [point for m in existing_modules for point in m.vertices]
-    
+
+    start_points = [point for point in box_br.vertices]
+
     grid_search_params = {"start_point": start_points,
-                          "angle": grid_search_angle, 
-                          "x_offset": grid_search_offset_x, 
+                          "angle": grid_search_angle,
+                          "x_offset": grid_search_offset_x,
                           "y_offset": grid_search_offset_y}
-    
+
     return grid_search_params
 
 
-def search_for_next_module_position(box, module, existing_modules):
-    
-    grid_search_params = _compute_search_grid_params(box=box, module=module, existing_modules=existing_modules)
-    
+def search_for_next_module_position(open_area, module):
+    grid_search_params = _compute_search_grid_params(box=open_area)
+
     grid_search_start_point = grid_search_params['start_point']
     grid_search_angle = grid_search_params['angle']
     grid_search_offset_x = grid_search_params['x_offset']
     grid_search_offset_y = grid_search_params['y_offset']
-    
-    open_area_shapely_obj = find_open_area(box=box, existing_modules=existing_modules)
-    
+
     for start_point in grid_search_start_point:
 
         for x in grid_search_offset_x:
 
             for y in grid_search_offset_y:
-                offset = (x, y)
 
-                for angle in grid_search_angle: 
-                    new_module = move_rotate_module_polygon(offset=offset, 
-                                                            angle=angle, 
+                offset = (x, y)
+                offset_point = sym.Point2D(x, y)
+
+                if not check_if_point_in_feasible_area(point=offset_point,
+                                                       open_area=open_area):
+                    break
+
+                for angle in grid_search_angle:
+                    new_module = move_rotate_module_polygon(offset=offset,
+                                                            angle=angle,
                                                             rotate_point=start_point,
                                                             module=module)
 
-                    if (check_if_module_is_in_box(new_module, open_area_shapely_obj) 
-                        and not check_if_polygons_overlap_with_each_other(new_poly=new_module, 
-                                                                          list_of_polys=existing_modules)):
+                    if check_if_module_is_in_box(new_module, open_area):
                         return new_module
-                    
 
-def random_search_for_next_module_position(box, module, existing_modules):
-    
-    open_area_shapely_obj = find_open_area(box=box, existing_modules=existing_modules)
-    
-    grid_search_params = _compute_search_grid_params(box=box, module=module, existing_modules=existing_modules)
-    
+
+def random_search_for_next_module_position(open_area, module):
+    grid_search_params = _compute_search_grid_params(box=open_area)
+
     grid_search_start_point = grid_search_params['start_point']
     grid_search_angle = grid_search_params['angle']
     grid_search_offset_x = grid_search_params['x_offset']
     grid_search_offset_y = grid_search_params['y_offset']
-    
+
     new_module = None
-    
-    while new_module is None:
-        
+    fail_ct = 0
+
+    while (new_module is None) or (fail_ct < 500):
+
         start_point = choice(grid_search_start_point)
         x = choice(grid_search_offset_x)
         y = choice(grid_search_offset_y)
-        offset = (x, y)
         angle = choice(grid_search_angle)
 
-        new_module = move_rotate_module_polygon(offset=offset, 
-                                                angle=angle, 
+        offset = (x, y)
+        offset_point = sym.Point2D(x, y)
+
+        if not check_if_point_in_feasible_area(point=offset_point,
+                                               open_area=open_area):
+            continue
+
+        new_module = move_rotate_module_polygon(offset=offset,
+                                                angle=angle,
                                                 rotate_point=start_point,
                                                 module=module)
-        
-        if (new_module is not None 
-            and check_if_module_is_in_box(new_module, open_area_shapely_obj) 
-            and not check_if_polygons_overlap_with_each_other(new_poly=new_module, 
-                                                              list_of_polys=existing_modules)):
+
+        if (new_module is not None) and check_if_module_is_in_box(new_module, open_area):
             return new_module
-                    
-                    
-                    
+        else:
+            new_module = None
+            fail_ct += 1
+
+
+def search_in_all_open_area(open_area_list, module, random_search=False):
+    for open_area in open_area_list:
+
+        if random_search:
+            new_module = random_search_for_next_module_position(open_area=open_area, module=module)
+        else:
+            new_module = search_for_next_module_position(open_area=open_area, module=module)
+
+        return new_module
